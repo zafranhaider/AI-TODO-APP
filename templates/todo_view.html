@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block content %}
+<style>/* Todo Detail Page Styles */
+.todo-detail {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.todo-detail h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  background: var(--success);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.desc {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--dark);
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+}
+
+/* Actions Section */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.actions form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions button {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.actions button[type="submit"] {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+.actions button[type="submit"]:hover {
+  background: var(--primary-dark);
+}
+
+#translate-form {
+  flex: 1;
+  min-width: 250px;
+}
+
+#target-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
+}
+
+/* Translation Section */
+.translation {
+  margin-bottom: 2.5rem;
+}
+
+.translation h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.translation h3::before {
+  content: "🌐";
+}
+
+.translated-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  line-height: 1.6;
+  color: var(--dark);
+}
+
+/* Subtasks Section */
+.subtasks {
+  margin-bottom: 2rem;
+}
+
+.subtasks h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subtasks h3::before {
+  content: "✓";
+  font-size: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subtasks ul {
+  list-style: none;
+  margin-top: 1rem;
+}
+
+.subtasks li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  background: white;
+  border: 1px solid var(--gray-light);
+}
+
+.subtasks li.done {
+  background: #f8fafc;
+  opacity: 0.8;
+}
+
+.subtasks li.done .checkbox {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+.checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--gray-light);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: transparent;
+}
+
+.checkbox:hover {
+  border-color: var(--primary);
+}
+
+.subtasks p {
+  color: var(--gray);
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+/* Back Link */
+.todo-detail > p:last-child {
+  margin-top: 1.5rem;
+}
+
+.todo-detail > p:last-child a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.todo-detail > p:last-child a:hover {
+  text-decoration: underline;
+}
+
+.todo-detail > p:last-child a::before {
+  content: "←";
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .todo-detail {
+    padding: 1.5rem;
+  }
+  
+  .actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  #translate-form {
+    min-width: 100%;
+  }
+  
+  .actions form {
+    width: 100%;
+  }
+  
+  #target-input {
+    width: 100%;
+  }
+}</style>
+<article class="todo-detail">
+  <h2>{{ todo.title }} {% if todo.completed %}<span class="badge">Completed</span>{% endif %}</h2>
+  <p class="desc">{{ todo.description or "(no description)" }}</p>
+
+  <div class="actions">
+    <form action="{{ url_for('toggle_complete', todo_id=todo.id) }}" method="post" style="display:inline;">
+      <button type="submit">{{ "Mark Uncompleted" if todo.completed else "Mark Completed" }}</button>
+    </form>
+
+    <form action="{{ url_for('generate_subtasks', todo_id=todo.id) }}" method="post" style="display:inline;">
+      <input type="hidden" name="max_subtasks" value="5">
+      <button type="submit">Generate Subtasks (AI)</button>
+    </form>
+
+    <form id="translate-form" action="{{ url_for('api_translate', todo_id=todo.id) }}" method="post" style="display:inline;">
+      <input id="target-input" name="target" placeholder="Language (e.g., Spanish or es)" />
+      <button type="button" onclick="doTranslate()">Translate</button>
+    </form>
+  </div>
+
+  {% if todo.translated_text %}
+    <section class="translation">
+      <h3>Translated ({{ todo.translated_lang }})</h3>
+      <div class="translated-box">{{ todo.translated_text }}</div>
+    </section>
+  {% endif %}
+
+  <section class="subtasks">
+    <h3>Subtasks</h3>
+    {% if todo.subtasks.count() %}
+      <ul>
+        {% for s in todo.subtasks.order_by('id') %}
+          <li class="{% if s.done %}done{% endif %}">
+            <form action="{{ url_for('toggle_subtask', subtask_id=s.id) }}" method="post" class="inline">
+              <button class="checkbox">{{ '✓' if s.done else '○' }}</button>
+            </form>
+            {{ s.text }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No subtasks yet. Click "Generate Subtasks (AI)".</p>
+    {% endif %}
+  </section>
+
+  <p><a href="{{ url_for('index') }}">← Back to list</a></p>
+</article>
+
+<script>
+async function doTranslate(){
+  const target = document.getElementById('target-input').value.trim();
+  if(!target){ alert("Enter a target language (name or code)"); return; }
+  const resp = await fetch("{{ url_for('api_translate', todo_id=todo.id) }}", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ target })
+  });
+  if(!resp.ok){
+    const t = await resp.json().catch(()=>({error:"translation failed"}));
+    alert("Translation failed: " + (t.error || "unknown"));
+    return;
+  }
+  const j = await resp.json();
+  // reload page to show translation
+  location.reload();
+}
+</script>
+{% endblock %}
